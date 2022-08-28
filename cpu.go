@@ -19,7 +19,7 @@ type CPU struct {
 }
 
 // Creates a new CPU instance
-func NewCPU(rom []byte) CPU {
+func NewCPU(rom []byte) *CPU {
 	ep := uint16(0x200)
 
 	c := CPU{
@@ -37,7 +37,7 @@ func NewCPU(rom []byte) CPU {
 	copy(c.mem, Sprites[0:])
 	copy(c.mem[ep:], rom)
 
-	return c
+	return &c
 }
 
 // Run the single CPU step, which:
