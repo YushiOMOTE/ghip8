@@ -9,7 +9,6 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
-	// "golang.org/x/image/colornames"
 )
 
 func main() {

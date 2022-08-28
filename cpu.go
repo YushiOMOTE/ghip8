@@ -4,6 +4,7 @@ import (
 	"math/rand"
 )
 
+// Represents CPU
 type CPU struct {
 	pc          uint16
 	i           uint16
@@ -17,6 +18,7 @@ type CPU struct {
 	time        int
 }
 
+// Creates a new CPU instance
 func NewCPU(rom []byte) CPU {
 	ep := uint16(0x200)
 
@@ -38,17 +40,26 @@ func NewCPU(rom []byte) CPU {
 	return c
 }
 
+// Run the single CPU step, which:
+//
+// * Fetches an instruction from the memory
+// * Executes an instruction
+// * Proceeds timers
 func (c *CPU) Run() {
 	op := c.fetch()
 	c.exec(op)
-	c.tick()
+	c.proceedTimer()
 }
 
-func (c *CPU) tick() {
+// Proceeds timers
+func (c *CPU) proceedTimer() {
 	c.time += 1
+
+	// Adjust the timer speed relative to CPU speed
 	if c.time < 10 {
 		return
 	}
+
 	c.time = 0
 	if c.delay_timer > 0 {
 		c.delay_timer -= 1
@@ -58,6 +69,7 @@ func (c *CPU) tick() {
 	}
 }
 
+// Fetches an instruction
 func (c *CPU) fetch() uint16 {
 	hb := c.mem[c.pc]
 	lb := c.mem[c.pc+1]
@@ -66,6 +78,7 @@ func (c *CPU) fetch() uint16 {
 	return op
 }
 
+// Executes an instruction
 func (c *CPU) exec(op uint16) {
 	nnn := op & 0x0fff
 	p := (op >> 12) & 0xf

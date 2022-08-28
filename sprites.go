@@ -1,5 +1,6 @@
 package main
 
+// Preset sprites stored in the memory region 0x000-0x1ff
 var Sprites = [...]uint8{
 	// 0
 	0xf0, 0x90, 0x90, 0x90, 0xf0,
