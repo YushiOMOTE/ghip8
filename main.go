@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	"errors"
 	"fmt"
 	"log"
@@ -9,9 +8,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
-
-//go:embed games/*.ch8
-var res embed.FS
 
 var Terminated = errors.New("terminated")
 
@@ -21,9 +17,8 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-
 	if g.game_runner.IsRunning() {
-		if g.game_runner.HandleInput() {
+		if g.game_runner.Update() {
 			g.game_runner.Stop()
 		}
 	} else {
@@ -31,7 +26,7 @@ func (g *Game) Update() error {
 			return Terminated
 		}
 
-		if g.rom_picker.HandleInput() {
+		if g.rom_picker.Update() {
 			rom := g.rom_picker.LoadRom()
 			g.game_runner.Start(rom)
 		}
@@ -59,15 +54,6 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 	picker := NewRomPicker()
 	runner := NewGameRunner()
-
-	files, err := res.ReadDir("games")
-	if err != nil {
-		panic(err)
-	}
-
-	for _, f := range files {
-		picker.Add(f.Name())
-	}
 
 	ebiten.SetWindowSize(640, 320)
 	ebiten.SetWindowTitle("Chip-8")

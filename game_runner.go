@@ -10,33 +10,24 @@ import (
 )
 
 type GameRunner struct {
-	stop    chan struct{}
 	running bool
+	freq    int
+	time    time.Time
 	cpu     *CPU
 }
 
 func NewGameRunner() GameRunner {
-	return GameRunner{make(chan struct{}), false, nil}
+	return GameRunner{false, 1000, time.Now(), NewCPU(make([]byte, 0))}
 }
 
 func (g *GameRunner) Start(rom []byte) {
-	fmt.Println("Starting game")
+	if g.running {
+		return
+	}
 
+	fmt.Println("Starting game")
 	g.cpu = NewCPU(rom)
 	g.running = true
-
-	go func() {
-		for {
-			select {
-			case <-time.Tick(time.Millisecond):
-				g.cpu.Run()
-			case <-g.stop:
-				fmt.Println("Stopped game")
-				g.running = false
-				break
-			}
-		}
-	}()
 }
 
 func (g *GameRunner) IsRunning() bool {
@@ -44,8 +35,7 @@ func (g *GameRunner) IsRunning() bool {
 }
 
 func (g *GameRunner) Stop() {
-	fmt.Println("Stopping game")
-	g.stop <- struct{}{}
+	g.running = false
 }
 
 var KeyMap = [...]ebiten.Key{
@@ -67,7 +57,11 @@ var KeyMap = [...]ebiten.Key{
 	ebiten.KeyV,
 }
 
-func (g *GameRunner) HandleInput() bool {
+func (g *GameRunner) Update() bool {
+	if !g.running {
+		return false
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		return true
 	}
@@ -81,10 +75,21 @@ func (g *GameRunner) HandleInput() bool {
 		}
 	}
 
+	dt := int(time.Since(g.time) / 1000)
+	g.time = time.Now()
+
+	for i := 0; i < dt*g.freq/1000000; i++ {
+		g.cpu.Run()
+	}
+
 	return false
 }
 
 func (g *GameRunner) Draw(screen *ebiten.Image) {
+	if !g.running {
+		return
+	}
+
 	for x := 0; x < g.cpu.Vram.Width; x++ {
 		for y := 0; y < g.cpu.Vram.Height; y++ {
 			if g.cpu.Vram.Get(x, y) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"image/color"
 	"log"
@@ -14,6 +15,11 @@ import (
 	"golang.org/x/image/font/opentype"
 )
 
+const RES_DIR = "roms/roms/games"
+
+//go:embed roms/roms/games/*.ch8
+var res embed.FS
+
 type RomPicker struct {
 	font        font.Face
 	sel         int
@@ -21,7 +27,7 @@ type RomPicker struct {
 	last_update time.Time
 }
 
-func NewRomPicker() RomPicker {
+func makeFont() font.Face {
 	tt, err := opentype.Parse(fonts.MPlus1pRegular_ttf)
 	if err != nil {
 		log.Fatal(err)
@@ -38,7 +44,22 @@ func NewRomPicker() RomPicker {
 		log.Fatal(err)
 	}
 
-	return RomPicker{font, 0, make([]string, 0), time.Now()}
+	return font
+}
+
+func NewRomPicker() RomPicker {
+	picker := RomPicker{makeFont(), 0, make([]string, 0), time.Now()}
+
+	files, err := res.ReadDir(RES_DIR)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, f := range files {
+		picker.Add(f.Name())
+	}
+
+	return picker
 }
 
 func (p *RomPicker) Add(item string) {
@@ -60,7 +81,7 @@ func (p *RomPicker) Prev() {
 func (p *RomPicker) LoadRom() []byte {
 	item := p.items[p.sel]
 
-	rom, err := res.ReadFile("games/" + item)
+	rom, err := res.ReadFile(RES_DIR + "/" + item)
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +89,7 @@ func (p *RomPicker) LoadRom() []byte {
 	return rom
 }
 
-func (p *RomPicker) HandleInput() bool {
+func (p *RomPicker) Update() bool {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		return true
 	}

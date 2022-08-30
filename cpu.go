@@ -186,7 +186,13 @@ func (c *CPU) exec(op uint16) {
 		case 0x07:
 			c.v[x] = c.delay_timer
 		case 0x0a:
-			c.v[x] = c.Keyboard.WaitForPress()
+			pressed := c.Keyboard.GetPressed()
+			if pressed == NotFound {
+				// stay in the same place as no key input
+				c.pc -= 2
+			} else {
+				c.v[x] = pressed
+			}
 		case 0x15:
 			c.delay_timer = c.v[x]
 		case 0x18:
