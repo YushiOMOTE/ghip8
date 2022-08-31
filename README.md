@@ -9,6 +9,17 @@
 ![](./assets/tron.png)
 ![](./assets/ufo.png)
 
+## Run
+
+1. Install [glfw dependencies](https://github.com/go-gl/glfw#installation)
+2. Run:
+
+```
+go run .
+```
+
+## Usage
+
 1. Select a ROM to play on the menu screen.
 2. Enjoy.
 
