@@ -1,4 +1,4 @@
-module example/hello
+module github.com/yushiomote/ghip8
 
 go 1.19
 
